@@ -7,8 +7,10 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 
+	"github.com/gorilla/websocket"
 	"github.com/lpernett/godotenv"
 )
 
@@ -21,7 +23,15 @@ func main () {
 	    log.Fatal("PORT not found")
 	}
 
-	app := application{}
+	// setup Socket
+	socket := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+	},}
+
+	app := application{
+		socket: socket,
+	}
 
 	app.allRooms.init()
 

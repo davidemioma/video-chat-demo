@@ -8,11 +8,13 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/gorilla/websocket"
 )
 
 type application struct {
-	logger   log.Logger
-	allRooms RoomMap
+	logger    log.Logger
+	allRooms  RoomMap
+	socket    websocket.Upgrader
 }
 
 func (app *application) mount() http.Handler {
@@ -45,9 +47,9 @@ func (app *application) mount() http.Handler {
 
 		r.Get("/err", handlerErr)
 
-		r.Post("/room/create", app.createRoomRequestHandler)
+		r.Post("/rooms/create", app.createRoomRequestHandler)
 
-		r.Patch("/room/join", app.joinRoomRequestHandler)
+		r.Patch("/rooms/{roomId}/join", app.joinRoomRequestHandler)
 	})
 
 	return r
