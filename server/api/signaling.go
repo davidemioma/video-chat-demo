@@ -17,7 +17,7 @@ func (app *application) createRoomRequestHandler(w http.ResponseWriter, r *http.
 
 	app.logger.Println("New room created")
 
-	respondWithJSON(w, http.StatusOK, Resp{
+	respondWithJSON(w, http.StatusCreated, Resp{
 		RoomID: roomId,
 		Message: "New room created",
 	})
@@ -79,7 +79,7 @@ func (app *application) joinRoomRequestHandler(w http.ResponseWriter, r *http.Re
 	for {
 		var msg BroadcastMsg
 
-		err := ws.ReadJSON(msg.Message)
+		err := ws.ReadJSON(&msg.Message)
 
 		if err != nil{
 			app.logger.Fatal("Read Error: ", err)
@@ -89,7 +89,7 @@ func (app *application) joinRoomRequestHandler(w http.ResponseWriter, r *http.Re
 
 		msg.RoomID = roomId
 
-		app.logger.Println(msg.Message)
+		app.logger.Println("Client Response: ", msg.Message)
 
 		broadcastChannel <- msg
 	}

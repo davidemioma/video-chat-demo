@@ -12,6 +12,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/lpernett/godotenv"
+
+	_ "github.com/lib/pq"
 )
 
 func main () {
@@ -23,6 +25,9 @@ func main () {
 	    log.Fatal("PORT not found")
 	}
 
+	// Create a logger
+	logger := log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+
 	// setup Socket
 	socket := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
@@ -31,6 +36,7 @@ func main () {
 
 	app := application{
 		socket: socket,
+		logger: logger,
 	}
 
 	app.allRooms.init()

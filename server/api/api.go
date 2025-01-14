@@ -12,7 +12,7 @@ import (
 )
 
 type application struct {
-	logger    log.Logger
+	logger    *log.Logger
 	allRooms  RoomMap
 	socket    websocket.Upgrader
 }
@@ -49,7 +49,7 @@ func (app *application) mount() http.Handler {
 
 		r.Post("/rooms/create", app.createRoomRequestHandler)
 
-		r.Patch("/rooms/{roomId}/join", app.joinRoomRequestHandler)
+		r.Get("/rooms/{roomId}/join", app.joinRoomRequestHandler)
 	})
 
 	return r
