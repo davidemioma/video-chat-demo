@@ -32,11 +32,15 @@ func (app *application) broadcaster() {
 		msg := <- broadcastChannel
 
 		for _, participant := range(app.allRooms.Map[msg.RoomID]){
-			if(participant.Conn != msg.Client){
+			if(participant.Conn != nil && participant.Conn != msg.Client){
+				app.allRooms.Mutex.Lock()
+
 				err := participant.Conn.WriteJSON(msg.Message)
 
+				app.allRooms.Mutex.Unlock()
+
 				if err != nil{
-					app.logger.Fatal(err)
+					app.logger.Println("Channel Error: ", err)
 
 					participant.Conn.Close()
 				}
@@ -59,11 +63,11 @@ func (app *application) joinRoomRequestHandler(w http.ResponseWriter, r *http.Re
 	ws, wsErr := app.socket.Upgrade(w, r, nil)
 
 	if wsErr != nil {
-		msg := "Web socket upgrade error"
+		errMsg := "Web socket upgrade error"
 
-		app.logger.Println(msg)
+		app.logger.Println("Socket Error", errMsg)
 
-		respondWithError(w, http.StatusBadRequest, msg)
+		respondWithError(w, http.StatusBadRequest, errMsg)
         
         return
     }
@@ -82,15 +86,22 @@ func (app *application) joinRoomRequestHandler(w http.ResponseWriter, r *http.Re
 		err := ws.ReadJSON(&msg.Message)
 
 		if err != nil{
-			app.logger.Fatal("Read Error: ", err)
+			app.logger.Println("Read Error: ", err)
+
+			break
 		}
 
 		msg.Client = ws
 
 		msg.RoomID = roomId
 
-		app.logger.Println("Client Response: ", msg.Message)
+		app.logger.Println("Message: ", msg.Message)
 
 		broadcastChannel <- msg
 	}
+
+	// Clean up when the connection is closed
+	app.allRooms.deleteRoom(roomId)
+
+	ws.Close() 
 }

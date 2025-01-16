@@ -50,7 +50,7 @@ export default function CreateRoomPage() {
         }}
         disabled={isPending}
       >
-        {isPending ? "Loading..." : "Button"}
+        {isPending ? "Loading..." : "Create Room"}
       </Button>
     </div>
   );
