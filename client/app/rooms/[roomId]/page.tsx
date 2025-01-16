@@ -3,7 +3,7 @@ import RoomDetails from "./_components/RoomDetails";
 export default async function RoomPage({
   params,
 }: {
-  params: { roomId: string };
+  params: Promise<{ roomId: string }>;
 }) {
   const roomId = (await params).roomId;
 
