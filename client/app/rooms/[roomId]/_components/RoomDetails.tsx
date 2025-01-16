@@ -186,6 +186,8 @@ const RoomDetails = ({ roomId }: Props) => {
     });
   });
 
+  if (!roomId) return null;
+
   return (
     <div className="w-full max-w-5xl mx-auto h-screen p-5 flex flex-col items-center justify-center">
       <div className="w-full grid md:grid-cols-2 gap-5">
