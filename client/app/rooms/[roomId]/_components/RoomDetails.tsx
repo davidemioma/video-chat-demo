@@ -78,59 +78,59 @@ const RoomDetails = ({ roomId }: Props) => {
     partnerVideo.current.srcObject = e.streams[0];
   };
 
+  // To call a user you have to create a peer connection between users
+  const createPeer = () => {
+    console.log("Creating Peer Connection");
+
+    // Urls should be a STUN or TURN connection
+    const peer = new RTCPeerConnection({
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    });
+
+    peer.onnegotiationneeded = handleNegotiationNeeded;
+
+    peer.onicecandidate = handleIceCandidateEvent;
+
+    peer.ontrack = handleTrackEvent;
+
+    return peer;
+  };
+
+  // Call user after creating a peer connection
+  const callUser = () => {
+    console.log("Calling Other User");
+
+    peerRef.current = createPeer();
+
+    userStream.current?.getTracks().forEach((track) => {
+      peerRef.current?.addTrack(track, userStream.current!);
+    });
+  };
+
+  // when you send an offer to another user, the other user returns an answer
+  const handleOffer = async (offer: RTCSessionDescriptionInit) => {
+    console.log("Received Offer, Creating Answer");
+
+    peerRef.current = createPeer();
+
+    await peerRef.current.setRemoteDescription(
+      new RTCSessionDescription(offer)
+    );
+
+    userStream.current?.getTracks().forEach((track) => {
+      peerRef.current?.addTrack(track, userStream.current!);
+    });
+
+    const answer = await peerRef.current.createAnswer();
+
+    await peerRef.current.setLocalDescription(answer);
+
+    webSocketRef.current?.send(
+      JSON.stringify({ answer: peerRef.current.localDescription })
+    );
+  };
+
   useEffect(() => {
-    // To call a user you have to create a peer connection between users
-    const createPeer = () => {
-      console.log("Creating Peer Connection");
-
-      // Urls should be a STUN or TURN connection
-      const peer = new RTCPeerConnection({
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
-      });
-
-      peer.onnegotiationneeded = handleNegotiationNeeded;
-
-      peer.onicecandidate = handleIceCandidateEvent;
-
-      peer.ontrack = handleTrackEvent;
-
-      return peer;
-    };
-
-    // Call user after creating a peer connection
-    const callUser = () => {
-      console.log("Calling Other User");
-
-      peerRef.current = createPeer();
-
-      userStream.current?.getTracks().forEach((track) => {
-        peerRef.current?.addTrack(track, userStream.current!);
-      });
-    };
-
-    // when you send an offer to another user, the other user returns an answer
-    const handleOffer = async (offer: RTCSessionDescriptionInit) => {
-      console.log("Received Offer, Creating Answer");
-
-      peerRef.current = createPeer();
-
-      await peerRef.current.setRemoteDescription(
-        new RTCSessionDescription(offer)
-      );
-
-      userStream.current?.getTracks().forEach((track) => {
-        peerRef.current?.addTrack(track, userStream.current!);
-      });
-
-      const answer = await peerRef.current.createAnswer();
-
-      await peerRef.current.setLocalDescription(answer);
-
-      webSocketRef.current?.send(
-        JSON.stringify({ answer: peerRef.current.localDescription })
-      );
-    };
-
     openCamera().then((stream) => {
       if (!stream) return;
 
