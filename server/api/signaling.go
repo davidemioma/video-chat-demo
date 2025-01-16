@@ -62,6 +62,8 @@ func (app *application) joinRoomRequestHandler(w http.ResponseWriter, r *http.Re
 
 	ws, wsErr := app.socket.Upgrade(w, r, nil)
 
+	app.logger.Println("Web Socket Connection: ", ws.RemoteAddr())
+
 	if wsErr != nil {
 		errMsg := "Web socket upgrade error"
 
